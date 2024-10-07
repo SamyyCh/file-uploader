@@ -9,6 +9,21 @@ async function renderIndex(req, res, next) {
   res.render("index")
 }
 
+async function getForm(req, res, next) {
+  res.render("form")
+}
+
+async function uploadFile(req, res, next) {
+  try {
+    const { filename, path } = req.file;
+    res.redirect('/');
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
-    renderIndex
+  renderIndex,
+  getForm,
+  uploadFile
 };

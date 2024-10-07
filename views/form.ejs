@@ -1,0 +1,17 @@
+<!--form.ejs-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/stylesheets/form.css">
+  <title>File Uploader</title>
+</head>
+<body>
+  <h1>Upload a file</h1>
+  <form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" />
+    <button type="submit">Upload File</button>
+  </form>  
+  <a href="/">Back</a>
+</body>
+</html>

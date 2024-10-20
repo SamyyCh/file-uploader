@@ -5,11 +5,11 @@ const passport = require("passport");
 const bcrypt = require("bcryptjs");
 const { check, validationResult } = require("express-validator");
 
-async function renderIndex(req, res, next) {
+async function renderIndex(req, res) {
   res.render("index")
 }
 
-async function getForm(req, res, next) {
+async function getForm(req, res) {
   res.render("form")
 }
 
@@ -22,8 +22,23 @@ async function uploadFile(req, res, next) {
   }
 }
 
+async function getFiles(req, res) {
+  res.render("view")
+}
+
+async function getFolderForm(req, res) {
+  res.render("folderForm")
+}
+
+async function getFolders(req, res) {
+  res.render("folders")
+}
+
 module.exports = {
   renderIndex,
   getForm,
-  uploadFile
+  uploadFile,
+  getFiles,
+  getFolderForm,
+  getFolders
 };

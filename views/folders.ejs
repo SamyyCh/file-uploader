@@ -8,8 +8,19 @@
 </head>
 <body>
   <h1>Your folders</h1>
-  <p>list the folders as hrefs</p>
+
+  <% if (folders.length > 0) { %>
+    <ul>
+      <% folders.forEach(folder => { %>
+        <li>
+          <a href="/folders/<%= folder.id %>"><%= folder.name %></a>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>No folders available. <a href="/createFolder">Create one</a></p>
+  <% } %>
+
   <a href="/">Home</a>
-  </form>  
 </body>
 </html>

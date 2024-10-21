@@ -1,9 +1,7 @@
 //fileController.js
 
-const pool = require("../db/pool");
-const passport = require("passport");
-const bcrypt = require("bcryptjs");
-const { check, validationResult } = require("express-validator");
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 async function renderIndex(req, res) {
   res.render("index")
@@ -30,8 +28,34 @@ async function getFolderForm(req, res) {
   res.render("folderForm")
 }
 
+async function postFolder(req, res) {
+  const { name } = req.body;
+  try {
+    await prisma.folder.create({
+      data: {
+        name: name,
+      }
+    })
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error creating folder");
+  }
+}
+
 async function getFolders(req, res) {
-  res.render("folders")
+  try {
+    const folders = await prisma.folder.findMany();
+    
+    res.render("folders", { folders });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching folders");
+  }
+};
+
+async function getFolder(req, res) {
+  const folder = req.body.id;
+  res.render("viewFolder", { folder })
 }
 
 module.exports = {
@@ -40,5 +64,7 @@ module.exports = {
   uploadFile,
   getFiles,
   getFolderForm,
-  getFolders
+  postFolder,
+  getFolders,
+  getFolder
 };

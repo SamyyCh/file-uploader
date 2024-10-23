@@ -1,8 +1,17 @@
 const { Router } = require("express");
 const fileController = require("../controllers/fileController");
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
 const fileRouter = Router();
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage: storage });
 
 fileRouter.get("/", fileController.renderIndex);
 fileRouter.get("/upload", fileController.getForm);

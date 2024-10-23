@@ -32,4 +32,6 @@ model File {
   path      String
   folderId  Int
   folder    Folder  @relation(fields: [folderId], references: [id])
+  size      Int
+  time      String
 }

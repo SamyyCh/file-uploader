@@ -21,7 +21,7 @@ async function getForm(req, res) {
 
 async function uploadFile(req, res, next) {
   try {
-    const { filename, path } = req.file;
+    const { filename, path, size } = req.file;
     let { folderId } = req.body;
 
     if (folderId === 'default') {
@@ -33,14 +33,22 @@ async function uploadFile(req, res, next) {
       folderId = defaultFolder.id;
     }    
 
+    const formattedTime = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+
     await prisma.file.create({
       data: {
         filename: filename,
         path: path,
-        folderId: parseInt(folderId)
+        folderId: parseInt(folderId),
+        size: size,
+        time: formattedTime
       }
     })
-    res.redirect('/');
+    res.redirect('/view');
   } catch (err) {
     next(err);
   }
@@ -88,6 +96,7 @@ async function postFolder(req, res) {
         name: name,
       }
     })
+    res.redirect('/folders');
   } catch (err) {
     console.error(err);
     res.status(500).send("Error creating folder");

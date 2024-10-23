@@ -141,7 +141,7 @@ async function deleteFile(req, res, next) {
           id: file.id
         }
       });
-      res.render("view");
+      res.redirect('/view');
     } else {
       res.status(404).send("File not found.");
     }
@@ -174,7 +174,7 @@ async function deleteFolder(req, res, next) {
           id: folder.id,
         },
       });
-      res.render("folders");
+      res.redirect('/folders');
     } else {
       res.status(404).send("Folder not found.");
     }
@@ -183,6 +183,38 @@ async function deleteFolder(req, res, next) {
     next(err);
   }
 }
+
+async function updateFolder(req, res, next) {
+  const folderId = parseInt(req.params.id);
+  const { name } = req.body;
+
+  try {
+    const folder = await prisma.folder.findUnique({
+      where: {
+        id: folderId
+      }
+    });
+
+    if (!folder) {
+      return res.status(404).send("Folder not found.");
+    }
+
+    const updatedFolder = await prisma.folder.update({
+      where: {
+        id: folderId
+      },
+      data: {
+        name: name
+      }
+    });
+
+    res.redirect('/folders');
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+}
+
 
 module.exports = {
   renderIndex,
@@ -195,5 +227,6 @@ module.exports = {
   getFolders,
   getFolder,
   deleteFile,
-  deleteFolder
+  deleteFolder,
+  updateFolder
 };

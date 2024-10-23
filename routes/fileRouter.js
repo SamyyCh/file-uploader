@@ -15,6 +15,7 @@ fileRouter.get("/folders", fileController.getFolders);
 fileRouter.get("/folders/:id", fileController.getFolder);
 fileRouter.delete("/view/:id", fileController.deleteFile);
 fileRouter.delete("/folders/:id", fileController.deleteFolder);
+fileRouter.put("/folders/:id", fileController.updateFolder);
 
 
 module.exports = fileRouter;

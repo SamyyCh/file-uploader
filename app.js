@@ -11,6 +11,8 @@ const app = express();
 const { PrismaClient } = require('@prisma/client');
 const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
 const prisma = new PrismaClient();
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");

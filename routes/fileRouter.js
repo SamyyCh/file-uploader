@@ -13,6 +13,8 @@ fileRouter.get("/createFolder", fileController.getFolderForm);
 fileRouter.post("/createFolder", fileController.postFolder);
 fileRouter.get("/folders", fileController.getFolders);
 fileRouter.get("/folders/:id", fileController.getFolder);
+fileRouter.delete("/view/:id", fileController.deleteFile);
+fileRouter.delete("/folders/:id", fileController.deleteFolder);
 
 
 module.exports = fileRouter;

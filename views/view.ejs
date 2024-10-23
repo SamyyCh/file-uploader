@@ -8,8 +8,17 @@
 </head>
 <body>
   <h1>Your Uploaded files</h1>
-  <p>list the files with delete and download buttons</p>
-  <a href="/">Home</a>
-  </form>  
+  <% if (file.length > 0) { %>
+    <ul>
+      <% file.forEach(file => { %>
+        <li>
+          <a href="/view/<%= file.id %>"><%= file.filename %></a>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>No files available. <a href="/upload">Add one</a></p>
+  <% } %>  
+  <a href="/">Home</a> 
 </body>
 </html>

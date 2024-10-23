@@ -1,14 +1,24 @@
-<!--view.ejs-->
+<!--viewFolder.ejs-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="/stylesheets/view.css">
-  <title>Files</title>
+  <title>Folder Details</title>
 </head>
 <body>
-  <h1>Your files</h1>
-  <p>your files should appear here the same way as they appear in view</p>
+  <h1>Folder Details:</h1>
+  <% if (folder.files && folder.files.length > 0) { %>
+    <ul>
+      <% folder.files.forEach(file => { %>
+        <li>
+          <a href="/view/<%= file.id %>"><%= file.filename %></a>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>No files present. <a href="/upload">Add one</a></p>
+  <% } %>
   <a href="/">Home</a>
 </body>
 </html>

@@ -8,6 +8,7 @@ fileRouter.get("/", fileController.renderIndex);
 fileRouter.get("/upload", fileController.getForm);
 fileRouter.post("/upload", upload.single('file'), fileController.uploadFile);
 fileRouter.get("/view", fileController.getFiles);
+fileRouter.get("/view/:id", fileController.getFileDetails);
 fileRouter.get("/createFolder", fileController.getFolderForm);
 fileRouter.post("/createFolder", fileController.postFolder);
 fileRouter.get("/folders", fileController.getFolders);

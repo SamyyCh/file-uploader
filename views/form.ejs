@@ -9,6 +9,17 @@
 <body>
   <h1>Upload a file</h1>
   <form action="/upload" method="post" enctype="multipart/form-data">
+    <label for="folder">Select Folder:</label>
+    <select name="folderId" id="folder">
+      <% if (folders.length > 0) { %>
+        <% folders.forEach(folder => { %>
+          <option value="<%= folder.id %>"><%= folder.name %></option>
+        <% }) %>
+      <% } else { %>
+        <option value="default">No folders available - Default Folder will be created</option>
+      <% } %>
+    </select>
+
     <input type="file" name="file" />
     <button type="submit">Upload File</button>
   </form>  

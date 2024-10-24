@@ -2,6 +2,7 @@
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const cloudinary = require('cloudinary').v2;
 
 async function renderIndex(req, res) {
   res.render("index")
@@ -21,7 +22,6 @@ async function getForm(req, res) {
 
 async function uploadFile(req, res, next) {
   try {
-    const { filename, path, size } = req.file;
     let { folderId } = req.body;
 
     if (folderId === 'default') {
@@ -33,6 +33,8 @@ async function uploadFile(req, res, next) {
       folderId = defaultFolder.id;
     }    
 
+    const result = await cloudinary.uploader.upload(req.file.path);
+
     const formattedTime = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -41,10 +43,10 @@ async function uploadFile(req, res, next) {
 
     await prisma.file.create({
       data: {
-        filename: filename,
-        path: path,
+        filename: req.file.originalname,
+        path: result.secure_url,
         folderId: parseInt(folderId),
-        size: size,
+        size: req.file.size,
         time: formattedTime
       }
     })

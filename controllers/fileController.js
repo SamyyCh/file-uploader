@@ -22,6 +22,7 @@ async function getForm(req, res) {
 
 async function uploadFile(req, res, next) {
   try {
+    const { filename } = req.file
     let { folderId } = req.body;
 
     if (folderId === 'default') {
@@ -43,7 +44,7 @@ async function uploadFile(req, res, next) {
 
     await prisma.file.create({
       data: {
-        filename: req.file.originalname,
+        filename: filename,
         path: result.secure_url,
         folderId: parseInt(folderId),
         size: req.file.size,

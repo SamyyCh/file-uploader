@@ -19,10 +19,8 @@ async function getForm(req, res) {
   }
 }
 
-
 async function uploadFile(req, res, next) {
   try {
-    const { filename } = req.file
     let { folderId } = req.body;
 
     if (folderId === 'default') {
@@ -30,28 +28,38 @@ async function uploadFile(req, res, next) {
         data: {
           name: "Default Folder"
         }
-      })
+      });
       folderId = defaultFolder.id;
-    }    
+    }
 
-    const result = await cloudinary.uploader.upload(req.file.path);
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { resource_type: 'auto', public_id: req.file.originalname },
+      async (error, result) => {
+        if (error) {
+          return next(error);
+        }
 
-    const formattedTime = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+        const formattedTime = new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
 
-    await prisma.file.create({
-      data: {
-        filename: filename,
-        path: result.secure_url,
-        folderId: parseInt(folderId),
-        size: req.file.size,
-        time: formattedTime
+        await prisma.file.create({
+          data: {
+            filename: req.file.originalname,
+            path: result.secure_url,
+            folderId: parseInt(folderId),
+            size: req.file.size,
+            time: formattedTime
+          }
+        });
+
+        res.redirect('/view');
       }
-    })
-    res.redirect('/view');
+    );
+
+    uploadStream.end(req.file.buffer);
   } catch (err) {
     next(err);
   }

@@ -20,7 +20,6 @@ app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(session({
   cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000

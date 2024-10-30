@@ -5,12 +5,34 @@ const prisma = new PrismaClient();
 const cloudinary = require('cloudinary').v2;
 
 async function renderIndex(req, res) {
-  res.render("index")
+  try {
+    if (!req.session.user) {
+      const newUser = await prisma.user.create({
+        data: {
+          username: `user-${Date.now()}`,
+          password: '',
+        }
+      });
+
+      req.session.user = {
+        id: newUser.id,
+        username: newUser.username,
+      };
+    }
+
+    res.render("index");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error rendering index");
+  }
 }
+
 
 async function getForm(req, res) {
   try {
-    const folders = await prisma.folder.findMany();
+    const folders = await prisma.folder.findMany({
+      where: { userId: req.session.user.id }
+    });
     
     res.render("form", { folders });
   } catch (err) {
@@ -26,7 +48,8 @@ async function uploadFile(req, res, next) {
     if (folderId === 'default') {
       const defaultFolder = await prisma.folder.create({
         data: {
-          name: "Default Folder"
+          name: "Default Folder",
+          userId: req.session.user.id
         }
       });
       folderId = defaultFolder.id;
@@ -51,7 +74,8 @@ async function uploadFile(req, res, next) {
             path: result.secure_url,
             folderId: parseInt(folderId),
             size: req.file.size,
-            time: formattedTime
+            time: formattedTime,
+            userId: req.session.user.id
           }
         });
 
@@ -67,7 +91,9 @@ async function uploadFile(req, res, next) {
 
 async function getFiles(req, res) {
   try {
-    const files = await prisma.file.findMany();
+    const files = await prisma.file.findMany({
+      where: { userId: req.session.user.id }
+    });
 
     res.render("view", { file: files });
   } catch (err) {
@@ -76,18 +102,16 @@ async function getFiles(req, res) {
   }
 }
 
-async function getFileDetails(req, res) {
+async function getFileDetails(req, res, next) {
   try {
     const file = await prisma.file.findUnique({
-      where: {
-        id: parseInt(req.params.id)
-      }
+      where: { id: parseInt(req.params.id) }
     });
 
-    if (file) {
+    if (file && file.userId === req.session.user.id) {
       res.render("viewDetails", { file });
     } else {
-      res.status(404).send("File not found");
+      res.status(404).send("File not found or unauthorized access.");
     }
   } catch (err) {
     console.error(err);
@@ -96,7 +120,7 @@ async function getFileDetails(req, res) {
 }
 
 async function getFolderForm(req, res) {
-  res.render("folderForm")
+  res.render("folderForm");
 }
 
 async function postFolder(req, res) {
@@ -105,8 +129,9 @@ async function postFolder(req, res) {
     await prisma.folder.create({
       data: {
         name: name,
+        userId: req.session.user.id
       }
-    })
+    });
     res.redirect('/folders');
   } catch (err) {
     console.error(err);
@@ -116,30 +141,28 @@ async function postFolder(req, res) {
 
 async function getFolders(req, res) {
   try {
-    const folders = await prisma.folder.findMany();
+    const folders = await prisma.folder.findMany({
+      where: { userId: req.session.user.id }
+    });
     
     res.render("folders", { folders: folders || [] });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error fetching folders");
   }
-};
+}
 
-async function getFolder(req, res) {
+async function getFolder(req, res, next) {
   try {
     const folder = await prisma.folder.findUnique({
-      where: {
-        id: parseInt(req.params.id)
-      },
-      include: {
-        files: true
-      }
+      where: { id: parseInt(req.params.id) },
+      include: { files: true }
     });
 
-    if (folder) {
+    if (folder && folder.userId === req.session.user.id) {
       res.render("viewFolder", { folder });
     } else {
-      res.status(404).send("Folder not found");
+      res.status(404).send("Folder not found or unauthorized access.");
     }
   } catch (err) {
     console.error(err);
@@ -150,20 +173,14 @@ async function getFolder(req, res) {
 async function deleteFile(req, res, next) {
   try {
     const file = await prisma.file.findUnique({
-      where: {
-        id: parseInt(req.params.id)
-      }
+      where: { id: parseInt(req.params.id) }
     });
 
-    if (file) {
-      await prisma.file.delete({
-        where: {
-          id: file.id
-        }
-      });
+    if (file && file.userId === req.session.user.id) {
+      await prisma.file.delete({ where: { id: file.id } });
       res.redirect('/view');
     } else {
-      res.status(404).send("File not found.");
+      res.status(404).send("File not found or unauthorized access.");
     }
   } catch (err) {
     console.error(err);
@@ -174,29 +191,18 @@ async function deleteFile(req, res, next) {
 async function deleteFolder(req, res, next) {
   try {
     const folder = await prisma.folder.findUnique({
-      where: {
-        id: parseInt(req.params.id)
-      },
-      include: {
-        files: true
-      }
+      where: { id: parseInt(req.params.id) },
+      include: { files: true }
     });
-    if (folder) {
+
+    if (folder && folder.userId === req.session.user.id) {
       if (folder.files.length > 0) {
-        await prisma.file.deleteMany({
-          where: {
-            folderId: folder.id,
-          },
-        });
+        await prisma.file.deleteMany({ where: { folderId: folder.id } });
       }
-      await prisma.folder.delete({
-        where: {
-          id: folder.id,
-        },
-      });
+      await prisma.folder.delete({ where: { id: folder.id } });
       res.redirect('/folders');
     } else {
-      res.status(404).send("Folder not found.");
+      res.status(404).send("Folder not found or unauthorized access.");
     }
   } catch (err) {
     console.error(err);
@@ -210,31 +216,23 @@ async function updateFolder(req, res, next) {
 
   try {
     const folder = await prisma.folder.findUnique({
-      where: {
-        id: folderId
-      }
+      where: { id: folderId }
     });
 
-    if (!folder) {
-      return res.status(404).send("Folder not found.");
+    if (folder && folder.userId === req.session.user.id) {
+      await prisma.folder.update({
+        where: { id: folderId },
+        data: { name }
+      });
+      res.redirect('/folders');
+    } else {
+      res.status(404).send("Folder not found or unauthorized access.");
     }
-
-    const updatedFolder = await prisma.folder.update({
-      where: {
-        id: folderId
-      },
-      data: {
-        name: name
-      }
-    });
-
-    res.redirect('/folders');
   } catch (err) {
     console.error(err);
     next(err);
   }
 }
-
 
 module.exports = {
   renderIndex,

@@ -11,6 +11,8 @@ model User {
   id       Int      @id @default(autoincrement())
   username String   @unique
   password String
+  files    File[]
+  folders  Folder[]
 }
 
 model Session {
@@ -24,6 +26,8 @@ model Folder {
   id        Int     @id @default(autoincrement())
   name      String
   files     File[]
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model File {
@@ -31,7 +35,9 @@ model File {
   filename  String
   path      String
   folderId  Int
-  folder    Folder  @relation(fields: [folderId], references: [id])
+  folder    Folder  @relation(fields: [folderId], references: [id], onDelete: Cascade)
   size      Int
   time      String
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
